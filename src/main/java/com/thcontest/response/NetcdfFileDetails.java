@@ -1,8 +1,6 @@
-package com.thcontest;
+package com.thcontest.response;
 
 import ucar.nc2.NetcdfFile;
-
-import java.util.Formatter;
 
 public record NetcdfFileDetails(
   String location,

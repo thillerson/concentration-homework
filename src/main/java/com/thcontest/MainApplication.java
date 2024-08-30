@@ -1,5 +1,7 @@
 package com.thcontest;
 
+import com.thcontest.data.ConcentrationDataHelper;
+import com.thcontest.response.NetcdfFileDetails;
 import ucar.ma2.Array;
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.NCdumpW;
@@ -35,16 +37,16 @@ public class MainApplication {
 	@GetMapping("/get-info")
 	public NetcdfFileDetails getInfo() {
 		try {
-			final URI concentrationFileURI = new URI("http://localhost:8080/concentration-data-file");
-
-			try (NetcdfFile ncfile = NetcdfFiles.openInMemory(concentrationFileURI)) {
-				return NetcdfFileDetails.fromFile(ncfile);
+			try{
+				final URI concentrationFileURI = new URI("http://localhost:8080/concentration-data-file");
+				ConcentrationDataHelper dataHelper = ConcentrationDataHelper.fromURL(concentrationFileURI);
+				return dataHelper.details();
 			} catch (IOException ioe) {
 				// TODO: return an error
 				logger.error("Error reading file", ioe);
 				throw new RuntimeException(ioe);
 			}
-		} catch (URISyntaxException e) {
+		} catch (URISyntaxException e) {// come on, this won't happen
 			logger.error("Error building concentration file URI", e);
 			throw new RuntimeException(e);
     }
