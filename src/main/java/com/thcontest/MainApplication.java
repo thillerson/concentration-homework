@@ -3,10 +3,11 @@ package com.thcontest;
 import com.thcontest.data.ConcentrationDataHelper;
 import com.thcontest.response.ConcentrationData;
 import com.thcontest.response.NetcdfFileDetails;
-import ucar.ma2.Array;
+import com.thcontest.response.exception.DataFileException;
+import com.thcontest.response.exception.IndexOutOfRangeException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import ucar.ma2.InvalidRangeException;
-import ucar.nc2.NetcdfFile;
-import ucar.nc2.NetcdfFiles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -14,12 +15,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ucar.nc2.Variable;
-import ucar.nc2.write.Ncdump;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 @RestController
 @SpringBootApplication
@@ -37,9 +34,8 @@ public class MainApplication {
 			ConcentrationDataHelper dataHelper = ConcentrationDataHelper.fromDefault();
 			return dataHelper.details();
 		} catch (IOException ioe) {
-			// TODO: return an error
-			logger.error("Error reading file", ioe);
-			throw new RuntimeException(ioe);
+			logger.error("Error reading data file", ioe);
+			throw new DataFileException("Error reading data file");
 		}
   }
 
@@ -52,9 +48,10 @@ public class MainApplication {
 			ConcentrationDataHelper dataHelper = ConcentrationDataHelper.fromDefault();
 			return dataHelper.concentrationAtTimeAndZ(timeIndex, zIndex);
 		} catch (IOException ioe) {
-			// TODO: return an error
 			logger.error("Error reading data file", ioe);
-			throw new RuntimeException(ioe);
+			throw new DataFileException("Error reading data file");
+		} catch (InvalidRangeException ire) {
+			throw new IndexOutOfRangeException(ire.getMessage());
 		}
 	}
 }
