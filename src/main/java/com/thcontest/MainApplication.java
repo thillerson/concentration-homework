@@ -6,7 +6,9 @@ import com.thcontest.response.ConcentrationData;
 import com.thcontest.response.NetcdfFileDetails;
 import com.thcontest.exception.DataFileException;
 import com.thcontest.exception.IndexOutOfRangeException;
+import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ucar.ma2.InvalidRangeException;
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 @RestController
@@ -54,6 +58,28 @@ public class MainApplication {
 			throw new IndexOutOfRangeException(ire.getMessage());
 		}
 	}
+
+	@GetMapping(
+		path = "/get-image",
+		produces = MediaType.IMAGE_PNG_VALUE
+	)
+	public byte[] getImage(
+		@RequestParam(name = "time-index", required = false) Integer timeIndex,
+		@RequestParam(name = "z-index", required = false) Integer zIndex
+	) {
+		ConcentrationDataHelper dataHelper = new ConcentrationDataHelper();
+    try {
+      var image =  dataHelper.imageAtTimeAndZ(timeIndex, zIndex);
+			var baos = new ByteArrayOutputStream();
+			ImageIO.write(image, "png", baos);
+			return baos.toByteArray();
+		} catch (IOException ioe) {
+			logger.error("Error reading data file", ioe);
+			throw new DataFileException("Error reading data file");
+		} catch (InvalidRangeException ire) {
+			throw new IndexOutOfRangeException(ire.getMessage());
+		}
+  }
 
 	@ExceptionHandler(IndexOutOfRangeException.class)
 	public ResponseEntity<Error> handleIndexOutOfRange(IndexOutOfRangeException e) {
