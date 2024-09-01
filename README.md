@@ -15,6 +15,8 @@ The project can be run as a containerized application or "locally".
 
 If running locally using `gradle` (see below), i.e. not as a containerized application, first copy `.env.example` to `.env`, and change the `DATAFILE_PATH` variable to have the absolute path to the project's `data/concentration.timeseries.nc` NetCDF data file.
 
+Note that the `.env.production` environment file will be used verbatim in any containerized deployments. (This is just for convenience and in a real world situation would be handled differently).
+
 ### Running
 The project can be run in the following ways:
 1. **Gradle**: Execute `./gradlew runBoot`
