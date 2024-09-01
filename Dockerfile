@@ -1,6 +1,8 @@
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin
 
 WORKDIR /app
+# The font libraries are for the label we write to the get-image image
+RUN apt-get update && apt-get install -y fontconfig libfreetype6
 
 COPY data data
 COPY .env.production .env
