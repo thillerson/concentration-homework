@@ -33,8 +33,7 @@ public class MainApplication {
 	@GetMapping("/get-info")
 	public NetcdfFileDetails getInfo() {
 		try{
-			ConcentrationDataHelper dataHelper = ConcentrationDataHelper.fromDefault();
-			return dataHelper.details();
+			return new ConcentrationDataHelper().details();
 		} catch (IOException ioe) {
 			logger.error("Error reading data file", ioe);
 			throw new DataFileException("Error reading data file");
@@ -47,8 +46,7 @@ public class MainApplication {
 		@RequestParam(name = "z-index", required = false) Integer zIndex
 	) {
 		try{
-			ConcentrationDataHelper dataHelper = ConcentrationDataHelper.fromDefault();
-			return dataHelper.concentrationAtTimeAndZ(timeIndex, zIndex);
+			return new ConcentrationDataHelper().concentrationAtTimeAndZ(timeIndex, zIndex);
 		} catch (IOException ioe) {
 			logger.error("Error reading data file", ioe);
 			throw new DataFileException("Error reading data file");

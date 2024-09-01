@@ -32,25 +32,12 @@ public class ConcentrationDataHelper {
 
   }
 
-  private ConcentrationDataHelper() { /* use a static factory method */ }
-
-  public static ConcentrationDataHelper fromDefault() {
+  public ConcentrationDataHelper() {
     try {
-      var uri = new URI("http://localhost:8080/concentration-data-file");
-      return ConcentrationDataHelper.fromURL(uri);
+      concentrationFileURI = new URI("http://localhost:8080/concentration-data-file");
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  public static ConcentrationDataHelper fromURL(URI remoteLocation) {
-    var helper = new ConcentrationDataHelper();
-    helper.initWithURI(remoteLocation);
-    return helper;
-  }
-
-  private void initWithURI(URI uri) {
-    concentrationFileURI = uri;
   }
 
   public NetcdfFileDetails details() throws IOException {
