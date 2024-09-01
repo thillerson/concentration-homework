@@ -2,6 +2,17 @@ package com.thcontest.response;
 
 import ucar.nc2.NetcdfFile;
 
+/**
+ * DTO for details about a NetCDF data file
+ * @param location
+ * @param title
+ * @param id
+ * @param fileType
+ * @param fileDesc
+ * @param fileVersion
+ * @param className
+ * @param rawDetails - contents of NetCDFDump
+ */
 public record NetcdfFileDetails(
   String location,
   String title,

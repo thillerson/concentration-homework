@@ -24,6 +24,9 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+/**
+ * MainApplication - the Spring Boot application. Also contains all three endpoint definitions.
+ */
 @RestController
 @SpringBootApplication
 public class MainApplication {
@@ -34,6 +37,10 @@ public class MainApplication {
 		SpringApplication.run(MainApplication.class, args);
 	}
 
+	/**
+	 * getInfo - `/get-info` endpoint
+	 * @return NetcdfFileDetails contains information about the NetCDF data file
+	 */
 	@GetMapping("/get-info")
 	public NetcdfFileDetails getInfo() {
 		try{
@@ -44,6 +51,14 @@ public class MainApplication {
 		}
   }
 
+	/**
+	 * getData - `/get-data` endpoint
+	 * @param timeIndex int value for time index to retrieve
+	 * @param zIndex int value for z index to retrieve
+	 * @return ConcentrationData concentration data for current time and z indices
+	 * @throws DataFileException if there is an issue reading the data file
+	 * @throws IndexOutOfRangeException if one of the given index variables is out of range
+	 */
 	@GetMapping("/get-data")
 	public ConcentrationData getData(
 		@RequestParam(name = "time-index", required = false) Integer timeIndex,
@@ -59,6 +74,14 @@ public class MainApplication {
 		}
 	}
 
+	/**
+	 * getImage - `/get-image` endpoint
+	 * @param timeIndex int value for time index to retrieve
+	 * @param zIndex int value for z index to retrieve
+	 * @return byte[] PNG encoded image data visualizing concentration at the given time and z indices
+	 * @throws DataFileException if there is an issue reading the data file
+	 * @throws IndexOutOfRangeException if one of the given index variables is out of range
+	 */
 	@GetMapping(
 		path = "/get-image",
 		produces = MediaType.IMAGE_PNG_VALUE
@@ -81,6 +104,11 @@ public class MainApplication {
 		}
   }
 
+	/**
+	 * handleIndexOutOfRange - error handler returning a JSON error message for IndexOutOfRangeException
+	 * @param e IndexOutOfRangeException
+	 * @return Error document
+	 */
 	@ExceptionHandler(IndexOutOfRangeException.class)
 	public ResponseEntity<Error> handleIndexOutOfRange(IndexOutOfRangeException e) {
 		var err = new Error(
@@ -90,6 +118,11 @@ public class MainApplication {
 		return new ResponseEntity<>(err, HttpStatus.BAD_REQUEST);
 	}
 
+	/**
+	 * handleDataFileError - error handler returning a JSON error message for DataFileException
+	 * @param e DataFileException
+	 * @return Error document
+	 */
 	@ExceptionHandler(DataFileException.class)
 	public ResponseEntity<Error> handleDataFileError(DataFileException e) {
 		var err = new Error(

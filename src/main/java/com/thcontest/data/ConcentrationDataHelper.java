@@ -20,6 +20,9 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * ConcentrationDataHelper NetCDF querying
+ */
 public class ConcentrationDataHelper {
   private final Logger logger = LoggerFactory.getLogger(ConcentrationDataHelper.class);
   private final URI concentrationFileURI;
@@ -35,6 +38,9 @@ public class ConcentrationDataHelper {
   ) {
   }
 
+  /**
+   *  ConcentrationDataHelper helps read data from a NetCDF file
+   */
   public ConcentrationDataHelper() {
     try {
       concentrationFileURI = new URI("http://localhost:8080/concentration-data-file");
@@ -43,12 +49,25 @@ public class ConcentrationDataHelper {
     }
   }
 
+  /**
+   * details gets details about the NetCDF file
+   * @return NetcdfFileDetails a detail DTO
+   * @throws IOException if there is an issue reading the NetCDF file
+   */
   public NetcdfFileDetails details() throws IOException {
     try (NetcdfFile ncfile = NetcdfFiles.openInMemory(concentrationFileURI)) {
       return NetcdfFileDetails.fromFile(ncfile);
     }
   }
 
+  /**
+   *  concentrationAtTimeAndZ - gets concentration data
+   * @param timeIndex - an integer time index
+   * @param zIndex - an integer z index
+   * @return ConcentrationData data about concentration at certain x and y coordinates
+   * @throws IOException if there is an issue reading the NetCDF file
+   * @throws InvalidRangeException if one or more of time or z indices are out of valid range
+   */
   public ConcentrationData concentrationAtTimeAndZ(Integer timeIndex, Integer zIndex) throws IOException, InvalidRangeException {
     try (NetcdfFile ncfile = NetcdfFiles.openInMemory(concentrationFileURI)) {
       var concentrationInfo = infoForTimeAndZ(timeIndex, zIndex, ncfile);
@@ -78,6 +97,14 @@ public class ConcentrationDataHelper {
     }
   }
 
+  /**
+   * imageAtTimeAndZ returns an image visualizing concentration data at given time and z indices
+   * @param timeIndex - an integer time index
+   * @param zIndex - an integer z index
+   * @return BufferedImage image data
+   * @throws IOException if there is an issue reading the NetCDF file
+   * @throws InvalidRangeException if one or more of time or z indices are out of valid range
+   */
   public BufferedImage imageAtTimeAndZ(Integer timeIndex, Integer zIndex) throws IOException, InvalidRangeException {
     try (NetcdfFile ncfile = NetcdfFiles.openInMemory(concentrationFileURI)) {
       var concentrationInfo = infoForTimeAndZ(timeIndex, zIndex, ncfile);
@@ -85,6 +112,9 @@ public class ConcentrationDataHelper {
     }
   }
 
+  /**
+   * Loads the concentration data and returns a value object of data at a time and z index
+   */
   private ConcentrationVarInfo infoForTimeAndZ(int timeIndex, int zIndex, NetcdfFile file) throws InvalidRangeException, IOException {
     // double concentration(time=8, z=1, y=27, x=36);
     Variable v = file.findVariable("concentration");
@@ -108,7 +138,11 @@ public class ConcentrationDataHelper {
     );
   }
 
+  /**
+   * Turns concentration data into an image
+   */
   private static BufferedImage concentrationToImage(ConcentrationVarInfo concentrationInfo) {
+    // Scale factor for making image a reasonable size
     int imageScaleFactor = 20;
     int margin = imageScaleFactor * 2;
     int width = (concentrationInfo.xDimension.getLength() * imageScaleFactor) + margin * 2;
@@ -116,17 +150,20 @@ public class ConcentrationDataHelper {
 
     BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
     Graphics g = bufferedImage.getGraphics();
+    // White background fill
     g.setColor(Color.WHITE);
     g.fillRect(0, 0, width - 1, height - 1);
+    // Black border
     g.setColor(Color.BLACK);
     g.drawRect(0, 0, width - 1, height - 1);
+    // Helpful title
     g.drawString(
       String.format("Concentration at time-index: %s, z-index: %s", concentrationInfo.timeIndex, concentrationInfo.zIndex),
       margin/2, margin/2
     );
 
     double currentConcentration;
-    // Take one pass to find min and max
+    // Take one pass through the array of concentration data to find min and max on a log scale
     List<Double> logValues = new ArrayList<>();
     var iter = concentrationInfo.array.getIndexIterator();
     while (iter.hasNext()) {
@@ -136,6 +173,7 @@ public class ConcentrationDataHelper {
     double min = logValues.stream().filter(n -> n > 0).min(Double::compareTo).get();
     double max = logValues.stream().max(Double::compareTo).get();
 
+    // Take another pass through to paint the grid of concentration values
     int currentX, currentY;
     int[] currentCounter;
     iter = concentrationInfo.array.getIndexIterator();
@@ -145,12 +183,16 @@ public class ConcentrationDataHelper {
       currentX = currentCounter[concentrationInfo.xDimensionIndex];
       currentY = currentCounter[concentrationInfo.yDimensionIndex];
 
+      // This attempts to find a suitable grayscale value between the min and max values
+      // of the current array
       double log= Math.log1p(currentConcentration);
       float grayscale = Math.abs((float) (((log - min) / (max - min)) * 255));
+      // Hax
       if (grayscale > 1) {
         grayscale = 1;
       }
 
+      // Paint a concentration value
       g.setColor(new Color(grayscale, grayscale, grayscale));
       g.fillRect((currentX * imageScaleFactor) + margin, (currentY * imageScaleFactor) + margin, imageScaleFactor - 1, imageScaleFactor - 1);
     }
