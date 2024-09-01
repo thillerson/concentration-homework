@@ -1,0 +1,5 @@
+services:
+  thcontest:
+    image: thillerson/thcontest
+    ports:
+      - 8080:8080
