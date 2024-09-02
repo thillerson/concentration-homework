@@ -41,7 +41,7 @@ Returns concentration data at given time and z indices. Example `/get-data?time-
 The JSON document returned has four fields:
 * `timeIndex` - the requested time index as an integer
 * `zIndex` - the requested z index as an integer
-* `concentrationField` - the concentration data as an array of arrays of strings. The outer array is the `y` coordinates and the inner arrays are the `x` coordinates. The concentration data is returned as strings containing concentration values in scientific notation
+* `concentrationField` - the concentration data as an array of arrays of strings. The outer array is the `y` coordinates and the inner arrays are the `x` coordinates. The concentration data are returned as strings containing concentration values in scientific notation
 * `concentrations` - this is a slightly different way of delivering the concentration values, just for discussion. Instead of an array "grid", it is a list of concentration data points in the form:
 ```json
 {
